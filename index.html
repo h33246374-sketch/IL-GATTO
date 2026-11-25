@@ -4688,7 +4688,24 @@ function musicStop(fade=0,reset=true){
  if(source&&gain){const now=music.ctx.currentTime;source.onended=()=>{music.retiring.delete(source);try{source.disconnect();gain.disconnect();}catch{}};try{gain.gain.cancelScheduledValues(now);gain.gain.setValueAtTime(gain.gain.value,now);if(fade){music.retiring.add(source);gain.gain.linearRampToValueAtTime(0,now+fade);source.stop(now+fade+.02);}else{gain.gain.setValueAtTime(0,now);source.stop();}}catch{}}
  music.cache=new WeakMap();musicRefresh();
 }
-async function musicBuffer(track,ctx){if(!music.cache.has(track)){const p=(async()=>ctx.decodeAudioData(await track.file.arrayBuffer()))();music.cache.set(track,p);p.catch(()=>music.cache.delete(track));}return music.cache.get(track);}
+async function musicBuffer(track,ctx){
+ if(!music.cache.has(track)){
+  const pending=(async()=>{
+   let audio;
+   if(track.file)audio=await track.file.arrayBuffer();
+   else if(track.url){
+    // Fetch only the selected song; a playlist of remote URLs does not download 100 MB at startup.
+    const response=await fetch(track.url,{mode:'cors'});
+    if(!response.ok||/text\/html|application\/json/i.test(response.headers.get('content-type')||''))throw Error('Remote audio unavailable');
+    audio=await response.arrayBuffer();
+   }else throw Error('Missing audio source');
+   return ctx.decodeAudioData(audio);
+  })();
+  music.cache.set(track,pending);
+  pending.catch(()=>music.cache.delete(track));
+ }
+ return music.cache.get(track);
+}
 async function musicPlay(fadeInSeconds=0){if(!music.mode||music.playing)return;const track=musicTrack();if(!track)return;const seq=++music.seq;music.playing=true;musicRefresh();try{const ctx=musicContext();if(ctx.state!=='running')await ctx.resume();const buffer=await musicBuffer(track,ctx);if(seq!==music.seq||!music.playing)return;const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;source.connect(gain);gain.connect(ctx.destination);const fade=Math.max(0,Math.min(6,Number(fadeInSeconds)||0));if(fade){gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(.65,ctx.currentTime+fade);}else gain.gain.setValueAtTime(.65,ctx.currentTime);music.offset=music.offset>=buffer.duration?0:music.offset;music.source=source;music.gain=gain;music.started=ctx.currentTime;source.onended=()=>{try{source.disconnect();gain.disconnect();}catch{}if(music.source!==source)return;music.source=null;music.gain=null;music.playing=false;music.offset=0;music.cache=new WeakMap();if(music.mode&&gattoTracks[music.mode].length){music.indices[music.mode]=(music.indices[music.mode]+1)%gattoTracks[music.mode].length;musicPlay();}};source.start(0,music.offset);}catch{if(seq===music.seq){music.playing=false;musicRefresh();toast(tr('Не удалось воспроизвести аудиофайл','Could not play audio file'));}}}
 function musicSkip(dir){if(!music.mode||!gattoTracks[music.mode].length)return;const playing=music.playing;musicStop(0);const mood=music.mode;music.indices[mood]=(music.indices[mood]+dir+gattoTracks[mood].length)%gattoTracks[mood].length;if(playing)musicPlay();else musicRefresh();}
 function musicDesired(){if($('sheet').open&&$('sheet').querySelector('.gatto-music[data-mood="calm"]'))return 'calm';const g=game();if(g&&!g.winner&&!E.departure(g)&&(E.inOpening(g)||E.round(g).stage==='night'))return 'dynamic';return null;}
@@ -4730,7 +4747,26 @@ function musicMatch(filename, tags={}){
 }
 function musicAdd(entry,file){const mood=entry.mood,list=gattoTracks[mood],current=musicTrack(mood)?.id,old=list.findIndex(t=>t.id===entry.id),track={...entry,file};if(old<0)list.push(track);else list[old]=track;musicQueueApplyOrder(mood);if(current){const i=list.findIndex(t=>t.id===current);if(i>=0)music.indices[mood]=i;}return track;}
 function musicStore(){return new Promise(resolve=>{try{const req=indexedDB.open('il-gatto-screenshot-music',1);req.onupgradeneeded=()=>req.result.createObjectStore('tracks',{keyPath:'id'});req.onsuccess=()=>{music.db=req.result;resolve(music.db);};req.onerror=()=>resolve(null);req.onblocked=()=>resolve(null);}catch{resolve(null);}});}
-async function musicRestore(){const db=await musicStore();if(!db)return;try{const req=db.transaction('tracks').objectStore('tracks').getAll();req.onsuccess=()=>{for(const x of req.result){const entry=musicCatalog.find(e=>e.id===x.id);if(entry&&x.file&&!gattoTracks[entry.mood].some(t=>t.id===entry.id))musicAdd(entry,x.file);}musicRefresh();};}catch{}}
+async function musicRestore(){
+ const db=await musicStore();if(!db)return;
+ return new Promise(resolve=>{try{
+  const req=db.transaction('tracks').objectStore('tracks').getAll();
+  req.onsuccess=()=>{
+   for(const x of req.result||[]){
+    const entry=musicCatalog.find(e=>e.id===x.id);
+    if(!entry||!x.file)continue;
+    const list=gattoTracks[entry.mood],existing=list.find(t=>t.id===entry.id);
+    if(existing&&existing.origin==='github'){
+     // Prefer a copy already saved on this device; its playback can work offline.
+     existing.file=x.file;
+     music.cache.delete(existing);
+    }else if(!existing)musicAdd(entry,x.file);
+   }
+   musicRefresh();resolve();
+  };
+  req.onerror=()=>resolve();
+ }catch{resolve();}});
+}
 function musicSave(items){if(!music.db)return;try{const tx=music.db.transaction('tracks','readwrite');for(const t of items)tx.objectStore('tracks').put({id:t.id,file:t.file});}catch{}}
 // ISO Base Media File Format (M4A/MP4): read metadata without loading audio payload.
 async function musicMp4Tags(file){
@@ -4820,17 +4856,77 @@ function musicImport(auto=false){
  // Some Android pickers return focus without firing cancel.
  window.addEventListener('focus',()=>setTimeout(()=>{if(input.isConnected&&!input.files.length)done();},900),{once:true});
 }
-// Known exact filenames seen in the user's Music folder. Only catalogue matches are loaded.
-const musicKnownFiles=['ANTONIA, Jenn Morel - Tiritera.mp3','bbno$ - pump it.m4a','Comagatte - Comme l italien - Comagatte.m4a','Cricket Captains - Meanwhile.mp3','Lil Uzi Vert - What You Saying.mp3','Masayoshi Takanaka - Brasilian Skies.mp3','Therapie TAXI - Crystal Memphis.mp3','Therapie TAXI - Crystal Memphis.m4a'];
-async function musicDiscoverAdjacent(){
- if(!/^https?:$/.test(location.protocol))return;
- const check=async name=>{try{const entry=musicMatch(name);if(!entry||gattoTracks[entry.mood].some(t=>t.id===entry.id))return;
- const url=new URL('Music/'+encodeURIComponent(name),location.href);const res=await fetch(url,{signal:AbortSignal.timeout(5000)});if(!res.ok)return;
- const blob=await res.blob();if(blob.size<64||/text\/|html|json/i.test(blob.type))return;
- const a=new Uint8Array(await blob.slice(0,16).arrayBuffer());const mp4=String.fromCharCode(...a.slice(4,8))==='ftyp',mp3=String.fromCharCode(...a.slice(0,3))==='ID3'||(a[0]===255&&(a[1]&224)===224);if(!mp4&&!mp3)return;
- if(!gattoTracks[entry.mood].some(t=>t.id===entry.id))musicAdd(entry,new File([blob],name,{type:mp4?'audio/mp4':'audio/mpeg'}));musicRefresh();
- }catch{}};
- await Promise.all(musicKnownFiles.map(check));
+// Public GitHub Music directory (MP3 / M4A). The embedded snapshot works when the
+// GitHub API is rate-limited; a fresh directory listing detects later uploads.
+const githubMusicRepo='h33246374-sketch/IL-GATTO';
+const githubMusicDir='Music';
+const githubMusicBase='https://raw.githubusercontent.com/'+githubMusicRepo+'/main/'+githubMusicDir+'/';
+// Filenames verified directly from the repository's public Music directory.
+const githubMusicInitial=[
+ 'урал гайсин - блюз.mp3',
+ 'Cricket Captains - Meanwhile.mp3',
+ 'Trio Ternura - A Gira.mp3',
+ 'ANTONIA, Jenn Morel - Tiritera.mp3',
+ 'Cancun - sega remix.m4a',
+ 'Chair Model - Cherry.m4a',
+ 'Comagatte - Comme l italien - Comagatte.m4a',
+ 'TRASHXRL - SEQUÊNCIA DA ORQUESTRA.mp3',
+ 'The Weeknd, Anitta - São Paulo.mp3',
+ 'Therapie TAXI - Crystal Memphis.mp3',
+ 'Tshegue - Survivor.mp3',
+ 'bbno$ - pump it.m4a'
+];
+const githubMusicCalm=new Set([
+ 'урал гайсин - блюз.mp3',
+ 'Cricket Captains - Meanwhile.mp3',
+ 'Trio Ternura - A Gira.mp3'
+].map(x=>x.toLowerCase()));
+let githubMusicLastCheck=0;
+let githubMusicPending=null;
+function githubMusicEntry(name){
+ const known=musicMatch(name);
+ if(known)return known;
+ const base=name.replace(/\.[^.]+$/,'');
+ const chunks=base.split(/\s+-\s+/);
+ const artist=chunks.length>1?chunks.shift():'';
+ const title=chunks.length?chunks.join(' - '):base;
+ const mood=githubMusicCalm.has(name.toLowerCase())?'calm':'dynamic';
+ return {id:'github:'+encodeURIComponent(name),mood,title,artist};
+}
+function githubMusicRegister(filenames){
+ let added=0;
+ for(const name of filenames){
+  if(typeof name!=='string'||!/\.(mp3|m4a|wav|ogg|aac|flac)$/i.test(name)||name.includes('/')||name.includes('\\'))continue;
+  const entry=githubMusicEntry(name),mood=entry.mood;
+  const url=githubMusicBase+encodeURIComponent(name);
+  const existing=gattoTracks[mood].find(t=>t.id===entry.id);
+  if(existing){
+   if(existing.origin==='github'&&!existing.file&&existing.url!==url)existing.url=url;
+   continue;
+  }
+  // Also avoid duplicates from names loaded under a different catalogue ID.
+  if(['calm','dynamic'].some(m=>gattoTracks[m].some(t=>t.githubFile===name)))continue;
+  musicAdd({...entry,githubFile:name,url,origin:'github'},null);
+  added++;
+ }
+ if(added)musicRefresh();
+ return added;
+}
+async function githubMusicDiscover(force=false){
+ if(!/^https?:$/.test(location.protocol)||typeof fetch!=='function')return;
+ if(githubMusicPending)return githubMusicPending;
+ if(!force&&Date.now()-githubMusicLastCheck<2*60*1000)return;
+ githubMusicLastCheck=Date.now();
+ githubMusicPending=(async()=>{
+  try{
+   const endpoint='https://api.github.com/repos/'+githubMusicRepo+'/contents/'+githubMusicDir+'?ref=main';
+   const response=await fetch(endpoint,{headers:{Accept:'application/vnd.github+json'},cache:'no-store'});
+   if(!response.ok)return;
+   const files=await response.json();
+   if(Array.isArray(files))githubMusicRegister(files.filter(x=>x&&x.type==='file'&&typeof x.name==='string').map(x=>x.name));
+  }catch{/* The initial filename snapshot remains usable without API access. */}
+ })().finally(()=>{githubMusicPending=null;});
+ return githubMusicPending;
 }
 
 
@@ -4847,7 +4943,7 @@ function musicQueueRefresh(){const q=musicQueue;if(!q.dialog?.open||q.closing||q
  body.innerHTML=list.length?list.map((t,i)=>`<div class="mq-row${t.id===current?' current':''}" data-mq-id="${esc(t.id)}"><button type="button" class="mq-select" aria-label="${esc(t.title)}" ${t.id===current?'aria-current="true"':''}><span class="mq-state">${t.id===current?musicIcon(playing?'pause':'play'):'<span class="mq-number">'+(i+1)+'</span>'}</span><span class="mq-title">${esc(t.title)}</span></button><button type="button" class="mq-handle" aria-label="${esc(tr('Изменить порядок: ','Reorder: ')+t.title)}" title="${tr('Перетащите или используйте стрелки вверх/вниз','Drag or use up/down arrow keys')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h8M8 12h8M8 18h8"/></svg></button></div>`).join(''):`<div class="mq-empty">${tr('Нет загруженных треков','No imported tracks')}<button class="mq-empty-import" type="button">${tr('Добавить музыку','Import music')}</button></div>`;
  body.scrollTop=top;
 }
-function musicQueueOpen(mood){const q=musicQueue;if(!gattoTracks[mood]||q.dialog?.open)return;const dlg=document.createElement('dialog');dlg.id='music-queue-dialog';dlg.setAttribute('aria-labelledby','mq-title');dlg.innerHTML=`<div class="mq-grip" aria-hidden="true"></div><div class="mq-header"><h2 class="mq-heading" id="mq-title"></h2><button type="button" class="mq-import" aria-label="${tr('Добавить музыку','Import music')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div><div class="mq-list"></div>`;document.body.append(dlg);q.dialog=dlg;q.mood=mood;q.signature='';q.closing=false;
+function musicQueueOpen(mood){githubMusicDiscover();const q=musicQueue;if(!gattoTracks[mood]||q.dialog?.open)return;const dlg=document.createElement('dialog');dlg.id='music-queue-dialog';dlg.setAttribute('aria-labelledby','mq-title');dlg.innerHTML=`<div class="mq-grip" aria-hidden="true"></div><div class="mq-header"><h2 class="mq-heading" id="mq-title"></h2><button type="button" class="mq-import" aria-label="${tr('Добавить музыку','Import music')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div><div class="mq-list"></div>`;document.body.append(dlg);q.dialog=dlg;q.mood=mood;q.signature='';q.closing=false;
  dlg.addEventListener('click',e=>{if(q.closing)return;if(e.target===dlg){const r=dlg.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)musicQueueClose();return;}if(e.target.closest('.mq-import,.mq-empty-import')){musicImport(false);return;}const select=e.target.closest('.mq-select');if(select)musicQueueSelect(select.closest('.mq-row').dataset.mqId);});
  dlg.addEventListener('cancel',e=>{e.preventDefault();musicQueueClose();});
  dlg.addEventListener('close',()=>{if(q.dialog===dlg){musicQueueDragEnd(true);q.dialog=null;q.mood=null;q.signature='';q.closing=false;}dlg.remove();});
@@ -4864,7 +4960,7 @@ function musicQueueDragEnd(cancel){const q=musicQueue,d=q.drag;if(!d)return;q.dr
 // Only taps on the panel background open the list; transport buttons stay independent.
 document.addEventListener('click',e=>{const panel=e.target.closest('.gatto-music');if(panel&&!e.target.closest('button'))musicQueueOpen(panel.dataset.mood);});
 
-musicRestore();musicDiscoverAdjacent();
+musicRestore().finally(()=>{githubMusicRegister(githubMusicInitial);githubMusicDiscover();});
 $('sheet').addEventListener('close',()=>musicSync());
 
 startStorage();
