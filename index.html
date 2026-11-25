@@ -1505,6 +1505,14 @@ html,body{overscroll-behavior-y:none}
 }
 </style>
 
+
+<style id="gatto-music-audio-controls">
+/* Volume adjustment lives only in the playlist sheet, not on stage cards. */
+#music-queue-dialog .mq-volume{display:flex;align-items:center;gap:12px;flex-shrink:0;padding:1px 4px 13px;color:var(--muted);font-size:12px;font-weight:650}
+#music-queue-dialog .mq-volume-title{white-space:nowrap}
+#music-queue-dialog input.mq-volume-slider{display:block;flex:1;min-width:0;width:100%;height:22px;min-height:22px;margin:0;padding:0;border:0;border-radius:0;background:transparent;accent-color:var(--accent);touch-action:pan-x}
+#music-queue-dialog .mq-volume-value{width:38px;flex:0 0 38px;text-align:right;color:var(--text);font-variant-numeric:tabular-nums}
+</style>
 </head>
 <body><div id="app"></div><dialog aria-labelledby="sheet-title" id="sheet"><div id="sheet-body"></div></dialog><div hidden="" id="toast" role="status"></div><style id="refactoring-ui-design-system">
 /* Refactoring UI: coherent scales, useful hierarchy, restrained elevation.
@@ -4675,15 +4683,85 @@ async function startStorage(){
 // Independent audio transport: game timers and saved game state are untouched.
 const musicCatalog=[{"id":"calm-0","mood":"calm","title":"Wicked Game","artist":"Chris Isaak"},{"id":"calm-1","mood":"calm","title":"Blue Hotel","artist":"Chris Isaak"},{"id":"calm-2","mood":"calm","title":"Far from Any Road","artist":"The Handsome Family"},{"id":"calm-3","mood":"calm","title":"After Dark","artist":"Tito & Tarantula"},{"id":"calm-4","mood":"calm","title":"Wondrous Place","artist":"Billy Fury"},{"id":"calm-5","mood":"calm","title":"Saddle Tramp","artist":"Marty Robbins"},{"id":"calm-6","mood":"calm","title":"Ballad of the Alamo","artist":"Marty Robbins"},{"id":"calm-7","mood":"calm","title":"The World We Knew (Over and Over)","artist":"Frank Sinatra"},{"id":"calm-8","mood":"calm","title":"Brasilian Skies","artist":"Masayoshi Takanaka"},{"id":"calm-9","mood":"calm","title":"Take Five","artist":""},{"id":"calm-10","mood":"calm","title":"блюз","artist":"урал гайсин"},{"id":"calm-11","mood":"calm","title":"Voices","artist":"Damiano David"},{"id":"calm-12","mood":"calm","title":"Tant pis","artist":"GIMS"},{"id":"calm-13","mood":"calm","title":"O, Moda Moda","artist":"Mgzavrebi"},{"id":"calm-14","mood":"calm","title":"Trinity: titoli","artist":"Annibale E I Cantori Moderni"},{"id":"calm-15","mood":"calm","title":"Just Yesterday","artist":"Sun Room"},{"id":"calm-16","mood":"calm","title":"Prairie Fire","artist":"Marty Robbins"},{"id":"dynamic-0","mood":"dynamic","title":"Red Sky","artist":"Status Quo"},{"id":"dynamic-1","mood":"dynamic","title":"Tell Me Lies","artist":""},{"id":"dynamic-2","mood":"dynamic","title":"Raya (Slowed)","artist":"Zericxxn"},{"id":"dynamic-3","mood":"dynamic","title":"Базовый минимум","artist":"SABI, MIA BOYKA"},{"id":"dynamic-4","mood":"dynamic","title":"ЭКСПОНАТ","artist":"MIA BOYKA"},{"id":"dynamic-5","mood":"dynamic","title":"КАРТА В БЛОКЕ","artist":"главный герой"},{"id":"dynamic-6","mood":"dynamic","title":"Ты не верь слезам","artist":"Шура"},{"id":"dynamic-7","mood":"dynamic","title":"Sweet Senorita","artist":"Smile.dk"},{"id":"dynamic-8","mood":"dynamic","title":"Take Control","artist":""},{"id":"dynamic-9","mood":"dynamic","title":"Caravana Twist","artist":"Bill Haley and His Comets"},{"id":"dynamic-10","mood":"dynamic","title":"In the Heat of a Disco Night","artist":""},{"id":"dynamic-11","mood":"dynamic","title":"Disenchanted","artist":"The Communards"},{"id":"dynamic-12","mood":"dynamic","title":"Back To Paradise","artist":"Reckless Love"},{"id":"dynamic-13","mood":"dynamic","title":"Killing My Love","artist":"Leslie Parrish"},{"id":"dynamic-14","mood":"dynamic","title":"Electric Molecular","artist":"Chemlab"},{"id":"dynamic-15","mood":"dynamic","title":"Alles dreht sich im Kreis","artist":"Orange Sector"},{"id":"dynamic-16","mood":"dynamic","title":"Get Ready, Get Set","artist":"Rebel Son"},{"id":"dynamic-17","mood":"dynamic","title":"Get Up Action","artist":"Digital Emotion"},{"id":"dynamic-18","mood":"dynamic","title":"Fortunate Son","artist":"Creedence Clearwater Revival"},{"id":"dynamic-19","mood":"dynamic","title":"The Motion Picture Medley","artist":"The Charades"},{"id":"dynamic-20","mood":"dynamic","title":"Walk Of Life","artist":"Dire Straits"},{"id":"dynamic-21","mood":"dynamic","title":"Don't Go","artist":"Yazoo"},{"id":"dynamic-22","mood":"dynamic","title":"Hot Nite In Dallas","artist":"Moon Martin"},{"id":"dynamic-23","mood":"dynamic","title":"Paranoid","artist":""},{"id":"dynamic-24","mood":"dynamic","title":"Smalltown Boy (1991 Remix)","artist":"Stephen Hague, Jimmy Somerville"},{"id":"dynamic-25","mood":"dynamic","title":"Just Dropped In","artist":""},{"id":"dynamic-26","mood":"dynamic","title":"Devil Got My Soul","artist":"Jimmy Cornett And The Deadmen"},{"id":"dynamic-27","mood":"dynamic","title":"Shape I'm In","artist":"Noah Hunt, Chris Layton, Reese Wynans"},{"id":"dynamic-28","mood":"dynamic","title":"Suicide Blonde","artist":"INXS"},{"id":"dynamic-29","mood":"dynamic","title":"Make My Way","artist":"Big Time Bossmen"},{"id":"dynamic-30","mood":"dynamic","title":"Laisse tomber les filles","artist":"Fabienne Delsol"},{"id":"dynamic-31","mood":"dynamic","title":"Wailin' (Original Mix)","artist":"The Ventures"},{"id":"dynamic-32","mood":"dynamic","title":"The Day That Curly Billy Shot Down Crazy Sam McGee","artist":"The Hollies"},{"id":"dynamic-33","mood":"dynamic","title":"Peter Gunn / Guitar Man","artist":""},{"id":"dynamic-34","mood":"dynamic","title":"Bad Case Of Lovin' You","artist":"Moon Martin"},{"id":"dynamic-35","mood":"dynamic","title":"Dancin'","artist":"Chris Isaak"},{"id":"dynamic-36","mood":"dynamic","title":"Keep on Rockin' (Remastered)","artist":"Alvin Lee"},{"id":"dynamic-37","mood":"dynamic","title":"I Want to Believe","artist":"Baby Strange"},{"id":"dynamic-38","mood":"dynamic","title":"Tommy-Gun","artist":"Royal Republic"},{"id":"dynamic-39","mood":"dynamic","title":"Latex","artist":"Chemlab"},{"id":"dynamic-40","mood":"dynamic","title":"Flesh and Blood","artist":"Messer Chups"},{"id":"dynamic-41","mood":"dynamic","title":"Bloodbath","artist":"LazerNomad"},{"id":"dynamic-42","mood":"dynamic","title":"Donde Estas, Yolanda?","artist":"Pink Martini"},{"id":"dynamic-43","mood":"dynamic","title":"Laisse tomber les filles","artist":"France Gall"},{"id":"dynamic-44","mood":"dynamic","title":"So Cold the Night","artist":"The Communards"},{"id":"dynamic-45","mood":"dynamic","title":"Shake Rattle And Roll","artist":"Jerry Lee Lewis"},{"id":"dynamic-46","mood":"dynamic","title":"Koko Soko (2008 Radio Redux)","artist":"Smile.dk"},{"id":"dynamic-47","mood":"dynamic","title":"You and Me (Remastered)","artist":"Funny Twins"},{"id":"dynamic-48","mood":"dynamic","title":"Shake Your Body","artist":"Quickdrop"},{"id":"dynamic-49","mood":"dynamic","title":"Bad Girlfriend","artist":"Theory Of A Deadman"},{"id":"dynamic-50","mood":"dynamic","title":"Dance with Me","artist":"Victoria Nordmann, Alimkhanov A."},{"id":"dynamic-51","mood":"dynamic","title":"Lecker","artist":"Jimmy Cornett And The Deadmen"},{"id":"dynamic-52","mood":"dynamic","title":"Freight Train","artist":"Tune Robbers"},{"id":"dynamic-53","mood":"dynamic","title":"LUZ ROJA (Rock Version)","artist":"Aaron Kos, bxkq"},{"id":"dynamic-54","mood":"dynamic","title":"Montagem Lunar Esmeralda","artist":"DJ Raulipues, DJ DYLANFK"},{"id":"dynamic-55","mood":"dynamic","title":"Levitating","artist":"Dua Lipa"},{"id":"dynamic-56","mood":"dynamic","title":"Lose My Mind","artist":"Doja Cat, Don Toliver"},{"id":"dynamic-57","mood":"dynamic","title":"911","artist":"Lady Gaga"},{"id":"dynamic-58","mood":"dynamic","title":"Laisses Tomber Les Filles","artist":"Cambodian Space Project"},{"id":"dynamic-59","mood":"dynamic","title":"My Type","artist":"Saint Motel"},{"id":"dynamic-60","mood":"dynamic","title":"Devil Woman","artist":"Cliff Richard"},{"id":"dynamic-61","mood":"dynamic","title":"Wave","artist":"Fast Boy, Raf"},{"id":"dynamic-62","mood":"dynamic","title":"Dead Or Alive","artist":"Klaas"},{"id":"dynamic-63","mood":"dynamic","title":"DROWN (tie me up)","artist":"Layto"},{"id":"dynamic-64","mood":"dynamic","title":"Don't Say Manhattan","artist":"All Fires"},{"id":"dynamic-65","mood":"dynamic","title":"Money Run Low","artist":"The Score"},{"id":"dynamic-66","mood":"dynamic","title":"Bad Lovin'","artist":"Reckless Love"},{"id":"dynamic-67","mood":"dynamic","title":"One of a Kind","artist":"Pandora"},{"id":"dynamic-68","mood":"dynamic","title":"Serotonin","artist":"Stuck on Planet Earth"},{"id":"dynamic-69","mood":"dynamic","title":"Less From You","artist":"We Are Scientists"},{"id":"calm-17","mood":"calm","title":"Wolf","artist":"First Aid Kit"},{"id":"calm-18","mood":"calm","title":"Codeine","artist":"Trampled By Turtles"},{"id":"calm-19","mood":"calm","title":"Wishing Girl","artist":"Lola Marsh"},{"id":"calm-20","mood":"calm","title":"Champagne Coast","artist":"Blood Orange"},{"id":"calm-21","mood":"calm","title":"Cantaloupe Island","artist":"New York Jazz Lounge"},{"id":"calm-22","mood":"calm","title":"The Riviera Affair","artist":"Neil Richardson"},{"id":"calm-23","mood":"calm","title":"Champagne Coast Piano","artist":"Nocturnex"},{"id":"calm-24","mood":"calm","title":"I Never Knew","artist":"Frank Sinatra"},{"id":"calm-25","mood":"calm","title":"Love and Freedom","artist":"Helmuth Brandenburg Orchestra"},{"id":"calm-26","mood":"calm","title":"The Rope And The Colt","artist":"Scott Walker"},{"id":"calm-27","mood":"calm","title":"Sunday Interlude","artist":"Delv!s"},{"id":"calm-28","mood":"calm","title":"Meanwhile","artist":"Cricket Captains"},{"id":"calm-29","mood":"calm","title":"A Gira","artist":"Trio Ternura"},{"id":"calm-30","mood":"calm","title":"Reviens jamais","artist":"Warren Saada"},{"id":"calm-31","mood":"calm","title":"Deeper Water","artist":"Meltt"},{"id":"calm-32","mood":"calm","title":"Girl Like Me (Electro Acoustic)","artist":"Club Madness"},{"id":"dynamic-70","mood":"dynamic","title":"Crystal Memphis","artist":"Therapie TAXI"},{"id":"dynamic-71","mood":"dynamic","title":"Racing on Mainstreet","artist":"Thundermother"},{"id":"dynamic-72","mood":"dynamic","title":"TOMBSTONE TOWN","artist":"Lanie Gardner, Dorothy, Slash"},{"id":"dynamic-73","mood":"dynamic","title":"Parallèle","artist":"Therapie TAXI"},{"id":"dynamic-74","mood":"dynamic","title":"Layla","artist":"Derek & The Dominos"},{"id":"dynamic-75","mood":"dynamic","title":"Down The Line","artist":"Gary Moore"},{"id":"dynamic-76","mood":"dynamic","title":"1985","artist":"Bo Burnham"},{"id":"dynamic-77","mood":"dynamic","title":"Bubblegum Bitch","artist":"MARINA"},{"id":"dynamic-78","mood":"dynamic","title":"Down to Drown","artist":"Night Sins"},{"id":"dynamic-79","mood":"dynamic","title":"Run","artist":"Vasco, Patrick West"},{"id":"dynamic-80","mood":"dynamic","title":"I'm Gonna Live Till I Die","artist":"Frank Sinatra"},{"id":"dynamic-81","mood":"dynamic","title":"Mujer Latina","artist":"Thalia"},{"id":"dynamic-82","mood":"dynamic","title":"Santiago","artist":"Preservation Hall Jazz Band"},{"id":"dynamic-83","mood":"dynamic","title":"Party Like Cowboyz","artist":"Big & Rich"},{"id":"dynamic-84","mood":"dynamic","title":"Devil In Me","artist":"22-20s"},{"id":"dynamic-85","mood":"dynamic","title":"NO PUEDO PARAR (Sped Up)","artist":"bxkq"},{"id":"dynamic-86","mood":"dynamic","title":"Luz Quebrada","artist":"2ndMoonx"},{"id":"dynamic-87","mood":"dynamic","title":"MEKI MEKI","artist":"Zhanbxqq"},{"id":"dynamic-88","mood":"dynamic","title":"MONTAGEM LUNAE","artist":"KXNO1X, TREVØLX"},{"id":"dynamic-89","mood":"dynamic","title":"SEQUÊNCIA DA ORQUESTRA","artist":"TRASHXRL"},{"id":"dynamic-90","mood":"dynamic","title":"Beyond the Sea","artist":"Bobby Darin"},{"id":"dynamic-91","mood":"dynamic","title":"Lucille (1957)","artist":"Little Richard"},{"id":"dynamic-92","mood":"dynamic","title":"You Should Be Dancing","artist":"Bee Gees"},{"id":"dynamic-93","mood":"dynamic","title":"Sweet Baby of Mine","artist":"Ruth Brown"},{"id":"dynamic-94","mood":"dynamic","title":"TRETAMENTO","artist":"WXCHSXN"},{"id":"dynamic-95","mood":"dynamic","title":"On the Luna","artist":"Foals"},{"id":"dynamic-96","mood":"dynamic","title":"Get Down","artist":"Chico Mann, CLAVVS"},{"id":"dynamic-97","mood":"dynamic","title":"Tanzapparat","artist":"David Löhlein, Mara"},{"id":"dynamic-98","mood":"dynamic","title":"The Menace","artist":"The Guitaraculas"},{"id":"dynamic-99","mood":"dynamic","title":"Employee of the Month","artist":"Rascalton"},{"id":"dynamic-100","mood":"dynamic","title":"What You Saying","artist":"Lil Uzi Vert"},{"id":"dynamic-101","mood":"dynamic","title":"LET'S GO","artist":"Jaden Bojsen"},{"id":"dynamic-102","mood":"dynamic","title":"Look at Me Now","artist":"West Rose"},{"id":"dynamic-103","mood":"dynamic","title":"pump it","artist":"bbno$"},{"id":"dynamic-104","mood":"dynamic","title":"Tiritera","artist":"Antonia, Jenn Morel"},{"id":"dynamic-105","mood":"dynamic","title":"Comme l’italien","artist":"Comagatte"},{"id":"dynamic-106","mood":"dynamic","title":"Angelina (Todos a la Fiesta)","artist":"Alma Ritano"},{"id":"dynamic-107","mood":"dynamic","title":"Ride with Me","artist":"The Mavericks"},{"id":"dynamic-108","mood":"dynamic","title":"La taberna del Buda","artist":"Cafe Quijano"},{"id":"dynamic-109","mood":"dynamic","title":"La Libertad","artist":"Alvaro Soler"},{"id":"dynamic-110","mood":"dynamic","title":"Je M'en Fous (Radio Edit)","artist":"Ridsa"},{"id":"dynamic-111","mood":"dynamic","title":"I Can Talk","artist":"Two Door Cinema Club"},{"id":"dynamic-112","mood":"dynamic","title":"Default","artist":"Django Django"},{"id":"dynamic-113","mood":"dynamic","title":"Self Aware","artist":"Temper City"},{"id":"dynamic-114","mood":"dynamic","title":"Pressure","artist":"Youngblood Hawke"},{"id":"dynamic-115","mood":"dynamic","title":"Run (Collins Remix)","artist":"OneRepublic, Collins"},{"id":"dynamic-116","mood":"dynamic","title":"The Fame","artist":"Satellite Stories"},{"id":"dynamic-117","mood":"dynamic","title":"Questions","artist":"Brandenburg"},{"id":"dynamic-118","mood":"dynamic","title":"Under The Sun","artist":"Lawson"},{"id":"dynamic-119","mood":"dynamic","title":"Under The Surface","artist":"Baby Strange"},{"id":"dynamic-120","mood":"dynamic","title":"Make You Make Believe","artist":"My Kid Brother"},{"id":"dynamic-121","mood":"dynamic","title":"Candy","artist":"Claudia Valentina"},{"id":"dynamic-122","mood":"dynamic","title":"Go Time","artist":"typo.s"},{"id":"dynamic-123","mood":"dynamic","title":"Where Do We Go","artist":""},{"id":"dynamic-124","mood":"dynamic","title":"Bones (Heart of the City)","artist":""}];
 const gattoTracks={calm:[],dynamic:[]};
-const music={mode:null,seen:false,indices:{calm:0,dynamic:0},offset:0,source:null,gain:null,ctx:null,started:0,playing:false,seq:0,cache:new WeakMap(),db:null,importing:false,retiring:new Set()};
+// Music-only audio settings are independent of the game and alarm sounds.
+const musicVolumeKey='il-gatto-music-volume-v1';
+let savedMusicVolume=.88;
+try{const val=Number(localStorage.getItem(musicVolumeKey));if(Number.isFinite(val)&&val>=0&&val<=100&&localStorage.getItem(musicVolumeKey)!==null)savedMusicVolume=val/100;}catch{}
+const music={mode:null,seen:false,indices:{calm:0,dynamic:0},offset:0,source:null,gain:null,ctx:null,started:0,playing:false,seq:0,cache:new WeakMap(),db:null,importing:false,retiring:new Set(),volume:savedMusicVolume,master:null,input:null,scheduled:null};
 function musicTrack(mood=music.mode){return mood?gattoTracks[mood][music.indices[mood]]:null;}
 const musicGlyphs={prev:'<path d="M4 5h3v14H4zM19 5 8 12l11 7z"/>',next:'<path d="M17 5h3v14h-3zM5 5l11 7-11 7z"/>',play:'<path d="M8 4.5a1.5 1.5 0 0 0-2 1.4v12.2a1.5 1.5 0 0 0 2 1.4l11-6.1a1.6 1.6 0 0 0 0-2.8z"/>',pause:'<rect x="6" y="4" width="4" height="16" rx="1.4"/><rect x="14" y="4" width="4" height="16" rx="1.4"/>'};
 function musicIcon(name){return `<svg viewBox="0 0 24 24" aria-hidden="true">${musicGlyphs[name]}</svg>`;}
 function musicMarkup(mood){const playing=music.mode===mood&&music.playing;return `<div class="gatto-music" data-mood="${mood}" role="group" aria-label="${tr('Музыка','Music')}"><button type="button" class="music-title" data-action="music-queue" aria-label="${tr('Открыть очередь','Open playlist')}" aria-haspopup="dialog">${esc(musicTrack(mood)?.title||'—')}</button><button type="button" data-action="music-prev" aria-label="${tr('Предыдущий трек','Previous track')}">${musicIcon('prev')}</button><button type="button" data-action="music-toggle" aria-label="${playing?tr('Пауза','Pause'):tr('Воспроизвести','Play')}">${musicIcon(playing?'pause':'play')}</button><button type="button" data-action="music-next" aria-label="${tr('Следующий трек','Next track')}">${musicIcon('next')}</button></div>`;}
 function musicRefresh(){document.querySelectorAll('.gatto-music').forEach(el=>{const mood=el.dataset.mood,playing=music.mode===mood&&music.playing;const title=musicTrack(mood)?.title||'—';el.querySelector('.music-title').textContent=title;el.querySelector('.music-title').title=title==='—'?tr('Открыть очередь','Open playlist'):title;const b=el.querySelector('[data-action="music-toggle"]');b.innerHTML=musicIcon(playing?'pause':'play');b.setAttribute('aria-label',playing?tr('Пауза','Pause'):tr('Воспроизвести','Play'));});musicQueueRefresh();}
 function musicContext(){const C=window.AudioContext||window.webkitAudioContext;if(!C)throw Error('Audio unavailable');music.ctx??=new C();return music.ctx;}
+// Shared processing chain for the entire music player. All overlapping tracks are
+// mixed before the limiter, preventing crossfades from creating excessive peaks.
+// The beep/notification oscillator uses a separate context and is not processed.
+function musicOutput(ctx){
+ if(music.input&&music.master&&music.ctx===ctx)return music.input;
+ const input=ctx.createGain(),master=ctx.createGain();
+ let node=input;
+ try{
+  const hp=ctx.createBiquadFilter();hp.type='highpass';hp.frequency.value=28;hp.Q.value=.7;
+  node.connect(hp);node=hp;
+  const bass=ctx.createBiquadFilter();bass.type='lowshelf';bass.frequency.value=135;bass.gain.value=.55;
+  node.connect(bass);node=bass;
+  const detail=ctx.createBiquadFilter();detail.type='highshelf';detail.frequency.value=5100;detail.gain.value=.65;
+  node.connect(detail);node=detail;
+  const leveling=ctx.createDynamicsCompressor();leveling.threshold.value=-17;leveling.knee.value=10;
+  leveling.ratio.value=2;leveling.attack.value=.009;leveling.release.value=.22;
+  node.connect(leveling);node=leveling;
+  const limiter=ctx.createDynamicsCompressor();limiter.threshold.value=-2;limiter.knee.value=0;
+  limiter.ratio.value=18;limiter.attack.value=.003;limiter.release.value=.09;
+  node.connect(limiter);node=limiter;
+ }catch{/* Browsers without optional DSP nodes retain direct audio playback. */}
+ node.connect(master);master.connect(ctx.destination);
+ music.input=input;music.master=master;musicApplyVolume();
+ return input;
+}
+function musicApplyVolume(){
+ if(!music.master||!music.ctx)return;
+ // Equal-power-ish volume scaling feels smoother than linear gains on a phone.
+ const gain=Math.pow(music.volume,1.25)*.98;
+ try{music.master.gain.setTargetAtTime(gain,music.ctx.currentTime,.025);}catch{music.master.gain.value=gain;}
+}
+function musicSetVolume(percent){
+ if(!Number.isFinite(+percent))return;
+ music.volume=Math.max(0,Math.min(100,+percent))/100;
+ try{localStorage.setItem(musicVolumeKey,String(Math.round(music.volume*100)));}catch{}
+ musicApplyVolume();
+}
+// Lightweight per-track loudness estimate. Smooth small differences between music
+// files without heavy gain changes or sacrificing strong transients.
+function musicLevel(buffer){
+ try{
+  const len=buffer.length,channels=Math.min(buffer.numberOfChannels,2),step=Math.max(1,Math.floor(len/7000));
+  let energy=0,samples=0,peak=0;
+  for(let ch=0;ch<channels;ch++){
+   const pcm=buffer.getChannelData(ch);
+   for(let i=0;i<len;i+=step){const x=pcm[i];energy+=x*x;samples++;peak=Math.max(peak,Math.abs(x));}
+  }
+  if(!samples)return .8;
+  const rms=Math.sqrt(energy/samples);
+  const ratio=Math.pow(.16/Math.max(.028,rms),.45);
+  // A cap preserves headroom before the mix limiter and avoids sudden jumps.
+  return Math.max(.78,Math.min(1.22,ratio,peak?1.04/peak:1.22));
+ }catch{return .8;}
+}
+// Stop both the audible source and the future scheduled source. Stopping the
+// future source prevents a preloaded track from starting after pause/skip.
+function musicCancelScheduled(){
+ const queued=music.scheduled;music.scheduled=null;
+ if(!queued)return;
+ queued.source.onended=null;
+ try{queued.source.stop();}catch{}
+ try{queued.source.disconnect();queued.gain.disconnect();}catch{}
+}
 function musicStop(fade=0,reset=true){
- music.seq++;if(!reset&&music.source&&music.ctx)music.offset+=Math.max(0,music.ctx.currentTime-music.started);if(reset)music.offset=0;
+ music.seq++;
+ if(!reset&&music.source&&music.ctx)music.offset+=Math.max(0,music.ctx.currentTime-music.started);
+ if(reset)music.offset=0;
+ musicCancelScheduled();
  const source=music.source,gain=music.gain;music.source=null;music.gain=null;music.playing=false;
  if(source&&gain){const now=music.ctx.currentTime;source.onended=()=>{music.retiring.delete(source);try{source.disconnect();gain.disconnect();}catch{}};try{gain.gain.cancelScheduledValues(now);gain.gain.setValueAtTime(gain.gain.value,now);if(fade){music.retiring.add(source);gain.gain.linearRampToValueAtTime(0,now+fade);source.stop(now+fade+.02);}else{gain.gain.setValueAtTime(0,now);source.stop();}}catch{}}
  music.cache=new WeakMap();musicRefresh();
@@ -4706,7 +4784,119 @@ async function musicBuffer(track,ctx){
  }
  return music.cache.get(track);
 }
-async function musicPlay(fadeInSeconds=0){if(!music.mode||music.playing)return;const track=musicTrack();if(!track)return;const seq=++music.seq;music.playing=true;musicRefresh();try{const ctx=musicContext();if(ctx.state!=='running')await ctx.resume();const buffer=await musicBuffer(track,ctx);if(seq!==music.seq||!music.playing)return;const source=ctx.createBufferSource(),gain=ctx.createGain();source.buffer=buffer;source.connect(gain);gain.connect(ctx.destination);const fade=Math.max(0,Math.min(6,Number(fadeInSeconds)||0));if(fade){gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(.65,ctx.currentTime+fade);}else gain.gain.setValueAtTime(.65,ctx.currentTime);music.offset=music.offset>=buffer.duration?0:music.offset;music.source=source;music.gain=gain;music.started=ctx.currentTime;source.onended=()=>{try{source.disconnect();gain.disconnect();}catch{}if(music.source!==source)return;music.source=null;music.gain=null;music.playing=false;music.offset=0;music.cache=new WeakMap();if(music.mode&&gattoTracks[music.mode].length){music.indices[music.mode]=(music.indices[music.mode]+1)%gattoTracks[music.mode].length;musicPlay();}};source.start(0,music.offset);}catch{if(seq===music.seq){music.playing=false;musicRefresh();toast(tr('Не удалось воспроизвести аудиофайл','Could not play audio file'));}}}
+// Inspect only the last 900 ms. This removes MP3/M4A encoding silence without
+// truncating deliberate quiet passages or storing additional decoded copies.
+function musicTailSilence(buffer){
+ try{
+  const sr=buffer.sampleRate,length=buffer.length,channels=Math.min(2,buffer.numberOfChannels);
+  const step=Math.max(128,Math.round(sr*.012));
+  const limit=Math.max(0,length-Math.round(sr*.9));
+  const pcm=Array.from({length:channels},(_,ch)=>buffer.getChannelData(ch));
+  let silent=0;
+  for(let i=length-step;i>=limit;i-=step){
+   let peak=0;
+   for(const data of pcm)for(let j=Math.max(0,i);j<Math.min(length,i+step);j+=Math.max(1,Math.floor(step/24)))peak=Math.max(peak,Math.abs(data[j]));
+   if(peak>.0018)break;
+   silent+=step;
+  }
+  return Math.min(.85,Math.max(0,silent/sr-.022));
+ }catch{return 0;}
+}
+function musicHeadSilence(buffer){
+ try{
+  const sr=buffer.sampleRate,length=buffer.length,channels=Math.min(2,buffer.numberOfChannels);
+  const step=Math.max(128,Math.round(sr*.012)),limit=Math.min(length,Math.round(sr*.65));
+  const pcm=Array.from({length:channels},(_,ch)=>buffer.getChannelData(ch));
+  let silent=0;
+  for(let i=0;i<limit;i+=step){
+   let peak=0;
+   for(const data of pcm)for(let j=i;j<Math.min(length,i+step);j+=Math.max(1,Math.floor(step/24)))peak=Math.max(peak,Math.abs(data[j]));
+   if(peak>.0018)break;
+   silent+=step;
+  }
+  return Math.min(.6,Math.max(0,silent/sr-.018));
+ }catch{return 0;}
+}
+function musicEnded(source,gain){
+ try{source.disconnect();gain.disconnect();}catch{}
+ if(music.source!==source)return;
+ const queued=music.scheduled;
+ if(queued&&queued.from===source&&queued.seq===music.seq&&queued.mood===music.mode){
+  music.scheduled=null;
+  music.source=queued.source;music.gain=queued.gain;
+  music.started=queued.startAt;music.offset=queued.offset;
+  music.indices[queued.mood]=queued.index;
+  music.cache=new WeakMap(); // keep at most the current and immediately upcoming decoded tracks
+  musicRefresh();
+  musicPreloadNext(queued.source,queued.buffer,queued.offset,music.seq);
+  return;
+ }
+ music.source=null;music.gain=null;music.playing=false;music.offset=0;
+ music.cache=new WeakMap();
+ if(music.mode&&gattoTracks[music.mode].length){
+  music.indices[music.mode]=(music.indices[music.mode]+1)%gattoTracks[music.mode].length;
+  musicPlay();
+ }else musicRefresh();
+}
+// Prepare the next track while the current one plays, then schedule the
+// transition against AudioContext.currentTime: audio does not wait for JS's
+// ended event, a new network request, or a tab's timer throttling.
+async function musicPreloadNext(source,buffer,offset,seq){
+ const mood=music.mode,list=gattoTracks[mood]||[],ctx=music.ctx;
+ if(!mood||!ctx||!list.length)return;
+ const index=(music.indices[mood]+1)%list.length;
+ const track=list[index];
+ try{
+  const nextBuffer=list.length===1?buffer:await musicBuffer(track,ctx);
+  if(seq!==music.seq||!music.playing||music.source!==source||music.mode!==mood||music.scheduled)return;
+  const tail=musicTailSilence(buffer),head=musicHeadSilence(nextBuffer);
+  const overlap=Math.min(.06,(buffer.duration-offset)/6,(nextBuffer.duration-head)/6);
+  const naturalEnd=music.started+buffer.duration-offset;
+  const target=naturalEnd-tail-overlap;
+  // The buffer may have arrived at the very end on slow mobile data.
+  // In that case play immediately if the current source is still active.
+  const startAt=Math.max(ctx.currentTime+.009,target);
+  if(startAt>=naturalEnd-.003)return; // onended fallback will start the decoded next buffer
+  const nextSource=ctx.createBufferSource(),nextGain=ctx.createGain();
+  nextSource.buffer=nextBuffer;nextSource.connect(nextGain);nextGain.connect(musicOutput(ctx));
+  const level=musicLevel(nextBuffer),cross=Math.min(.06,naturalEnd-startAt);
+  const nextOffset=Math.min(head,Math.max(0,nextBuffer.duration-.04));
+  nextGain.gain.setValueAtTime(0,startAt);
+  nextGain.gain.linearRampToValueAtTime(level,startAt+cross);
+  const currentGain=music.gain;
+  try{
+   currentGain.gain.cancelScheduledValues(startAt);
+   currentGain.gain.setValueAtTime(currentGain.gain.value,startAt);
+   currentGain.gain.linearRampToValueAtTime(0,startAt+cross);
+  }catch{}
+  music.scheduled={from:source,source:nextSource,gain:nextGain,buffer:nextBuffer,offset:nextOffset,startAt,index,mood,seq};
+  nextSource.onended=()=>musicEnded(nextSource,nextGain);
+  nextSource.start(startAt,nextOffset);
+  // Trimming the old source at the end of the overlap also causes UI to
+  // advance when the next track starts, rather than after trailing silence.
+  source.stop(Math.min(naturalEnd-.001,startAt+cross+.003));
+ }catch{/* Existing ended-event fallback is preserved on fetch/decode failures. */}
+}
+async function musicPlay(fadeInSeconds=0){
+ if(!music.mode||music.playing)return;
+ const track=musicTrack();if(!track)return;
+ const seq=++music.seq;music.playing=true;musicRefresh();
+ try{
+  const ctx=musicContext();if(ctx.state!=='running')await ctx.resume();
+  const buffer=await musicBuffer(track,ctx);
+  if(seq!==music.seq||!music.playing)return;
+  const source=ctx.createBufferSource(),gain=ctx.createGain();
+  source.buffer=buffer;source.connect(gain);gain.connect(musicOutput(ctx));
+  const level=musicLevel(buffer),fade=Math.max(0,Math.min(6,Number(fadeInSeconds)||0));
+  if(fade){gain.gain.setValueAtTime(0,ctx.currentTime);gain.gain.linearRampToValueAtTime(level,ctx.currentTime+fade);}
+  else gain.gain.setValueAtTime(level,ctx.currentTime);
+  music.offset=music.offset>=buffer.duration?0:music.offset;
+  music.source=source;music.gain=gain;music.started=ctx.currentTime;
+  source.onended=()=>musicEnded(source,gain);
+  source.start(0,music.offset);
+  musicPreloadNext(source,buffer,music.offset,seq);
+ }catch{if(seq===music.seq){music.playing=false;musicRefresh();toast(tr('Не удалось воспроизвести аудиофайл','Could not play audio file'));}}
+}
 function musicSkip(dir){if(!music.mode||!gattoTracks[music.mode].length)return;const playing=music.playing;musicStop(0);const mood=music.mode;music.indices[mood]=(music.indices[mood]+dir+gattoTracks[mood].length)%gattoTracks[mood].length;if(playing)musicPlay();else musicRefresh();}
 function musicDesired(){if($('sheet').open&&$('sheet').querySelector('.gatto-music[data-mood="calm"]'))return 'calm';const g=game();if(g&&!g.winner&&!E.departure(g)&&(E.inOpening(g)||E.round(g).stage==='night'))return 'dynamic';return null;}
 // Role appointment (calm) -> Mafia acquaintance (dynamic): crossfade both channels for 3 s.
@@ -4935,16 +5125,36 @@ const musicQueue={dialog:null,mood:null,closing:false,signature:'',drag:null,fra
 try{const saved=JSON.parse(localStorage.getItem('il-gatto-music-order-v1')||'{}');for(const m of ['calm','dynamic'])if(Array.isArray(saved[m]))musicQueue.order[m]=saved[m].filter(x=>typeof x==='string');}catch{}
 function musicQueueApplyOrder(mood){const rank=new Map(musicQueue.order[mood].map((id,i)=>[id,i]));gattoTracks[mood].sort((a,b)=>(rank.get(a.id)??Infinity)-(rank.get(b.id)??Infinity));}
 function musicQueueMove(mood,from,to){const list=gattoTracks[mood];if(from<0||to<0||from>=list.length||to>=list.length||from===to)return;const current=musicTrack(mood)?.id;list.splice(to,0,list.splice(from,1)[0]);if(current)music.indices[mood]=list.findIndex(t=>t.id===current);const present=new Set(list.map(t=>t.id));musicQueue.order[mood]=[...list.map(t=>t.id),...musicQueue.order[mood].filter(id=>!present.has(id))];try{localStorage.setItem('il-gatto-music-order-v1',JSON.stringify(musicQueue.order));}catch{}musicRefresh();}
-function musicQueueSelect(id){const mood=musicQueue.mood;if(!mood||music.mode!==mood)return;const idx=gattoTracks[mood].findIndex(t=>t.id===id);if(idx<0)return;if(musicTrack()?.id!==id){musicStop(0);music.indices[mood]=idx;}musicPlay();musicRefresh();}
+function musicQueueSelect(id){
+ const mood=musicQueue.mood;
+ if(!mood||music.mode!==mood)return;
+ const idx=gattoTracks[mood].findIndex(t=>t.id===id);
+ if(idx<0)return;
+ if(musicTrack()?.id===id){
+  // Tapping the current row is a true play/pause toggle, just like the
+  // header controls. Pause preserves the offset and cancels a queued song.
+  if(music.playing)musicStop(0,false);
+  else musicPlay();
+ }else{
+  // Selecting another song always starts it immediately, even if the
+  // previously selected song was paused.
+  musicStop(0);
+  music.indices[mood]=idx;
+  musicPlay();
+ }
+ musicRefresh();
+}
 function musicQueueRefresh(){const q=musicQueue;if(!q.dialog?.open||q.closing||q.drag||!q.mood)return;const mood=q.mood,list=gattoTracks[mood],current=musicTrack(mood)?.id,playing=music.mode===mood&&music.playing;const sig=JSON.stringify([mood,current,playing,list.map(t=>t.id),db.prefs.language]);if(sig===q.signature)return;q.signature=sig;
  const body=q.dialog.querySelector('.mq-list');const top=body.scrollTop;
  q.dialog.querySelector('.mq-heading').textContent=mood==='calm'?tr('Спокойная музыка','Calm music'):tr('Динамичная музыка','Dynamic music');
+ const volumeTitle=q.dialog.querySelector('.mq-volume-title');if(volumeTitle)volumeTitle.textContent=tr('Громкость','Volume');
  q.dialog.querySelector('.mq-import').setAttribute('aria-label',tr('Добавить музыку','Import music'));
- body.innerHTML=list.length?list.map((t,i)=>`<div class="mq-row${t.id===current?' current':''}" data-mq-id="${esc(t.id)}"><button type="button" class="mq-select" aria-label="${esc(t.title)}" ${t.id===current?'aria-current="true"':''}><span class="mq-state">${t.id===current?musicIcon(playing?'pause':'play'):'<span class="mq-number">'+(i+1)+'</span>'}</span><span class="mq-title">${esc(t.title)}</span></button><button type="button" class="mq-handle" aria-label="${esc(tr('Изменить порядок: ','Reorder: ')+t.title)}" title="${tr('Перетащите или используйте стрелки вверх/вниз','Drag or use up/down arrow keys')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h8M8 12h8M8 18h8"/></svg></button></div>`).join(''):`<div class="mq-empty">${tr('Нет загруженных треков','No imported tracks')}<button class="mq-empty-import" type="button">${tr('Добавить музыку','Import music')}</button></div>`;
+ body.innerHTML=list.length?list.map((t,i)=>`<div class="mq-row${t.id===current?' current':''}" data-mq-id="${esc(t.id)}"><button type="button" class="mq-select" aria-label="${esc((t.id===current?(playing?tr('Пауза: ','Pause: '):tr('Продолжить: ','Resume: ')):tr('Воспроизвести: ','Play: '))+t.title)}" ${t.id===current?'aria-current="true"':''}><span class="mq-state">${t.id===current?musicIcon(playing?'pause':'play'):'<span class="mq-number">'+(i+1)+'</span>'}</span><span class="mq-title">${esc(t.title)}</span></button><button type="button" class="mq-handle" aria-label="${esc(tr('Изменить порядок: ','Reorder: ')+t.title)}" title="${tr('Перетащите или используйте стрелки вверх/вниз','Drag or use up/down arrow keys')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h8M8 12h8M8 18h8"/></svg></button></div>`).join(''):`<div class="mq-empty">${tr('Нет загруженных треков','No imported tracks')}<button class="mq-empty-import" type="button">${tr('Добавить музыку','Import music')}</button></div>`;
  body.scrollTop=top;
 }
-function musicQueueOpen(mood){githubMusicDiscover();const q=musicQueue;if(!gattoTracks[mood]||q.dialog?.open)return;const dlg=document.createElement('dialog');dlg.id='music-queue-dialog';dlg.setAttribute('aria-labelledby','mq-title');dlg.innerHTML=`<div class="mq-grip" aria-hidden="true"></div><div class="mq-header"><h2 class="mq-heading" id="mq-title"></h2><button type="button" class="mq-import" aria-label="${tr('Добавить музыку','Import music')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div><div class="mq-list"></div>`;document.body.append(dlg);q.dialog=dlg;q.mood=mood;q.signature='';q.closing=false;
+function musicQueueOpen(mood){githubMusicDiscover();const q=musicQueue;if(!gattoTracks[mood]||q.dialog?.open)return;const dlg=document.createElement('dialog');dlg.id='music-queue-dialog';dlg.setAttribute('aria-labelledby','mq-title');dlg.innerHTML=`<div class="mq-grip" aria-hidden="true"></div><div class="mq-header"><h2 class="mq-heading" id="mq-title"></h2><button type="button" class="mq-import" aria-label="${tr('Добавить музыку','Import music')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div><label class="mq-volume"><span class="mq-volume-title">${tr('Громкость','Volume')}</span><input type="range" class="mq-volume-slider" min="0" max="100" step="1" value="${Math.round(music.volume*100)}" aria-label="${tr('Громкость','Volume')}"><output class="mq-volume-value">${Math.round(music.volume*100)}%</output></label><div class="mq-list"></div>`;document.body.append(dlg);q.dialog=dlg;q.mood=mood;q.signature='';q.closing=false;
  dlg.addEventListener('click',e=>{if(q.closing)return;if(e.target===dlg){const r=dlg.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)musicQueueClose();return;}if(e.target.closest('.mq-import,.mq-empty-import')){musicImport(false);return;}const select=e.target.closest('.mq-select');if(select)musicQueueSelect(select.closest('.mq-row').dataset.mqId);});
+ dlg.addEventListener('input',e=>{if(e.target.matches('.mq-volume-slider')){musicSetVolume(e.target.value);const out=dlg.querySelector('.mq-volume-value');if(out)out.textContent=Math.round(music.volume*100)+'%';}});
  dlg.addEventListener('cancel',e=>{e.preventDefault();musicQueueClose();});
  dlg.addEventListener('close',()=>{if(q.dialog===dlg){musicQueueDragEnd(true);q.dialog=null;q.mood=null;q.signature='';q.closing=false;}dlg.remove();});
  dlg.addEventListener('pointerdown',musicQueueDragStart);dlg.addEventListener('pointermove',musicQueueDragMove);dlg.addEventListener('pointerup',()=>musicQueueDragEnd(false));dlg.addEventListener('pointercancel',()=>musicQueueDragEnd(true));dlg.addEventListener('lostpointercapture',()=>musicQueueDragEnd(true));
