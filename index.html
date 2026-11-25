@@ -1407,6 +1407,10 @@ html,body{overscroll-behavior-y:none}
  }
 }
 </style>
+
+<style id="gatto-mafia-opening-urgent-v24">
+#app .simple-shell #opening-clock.urgent{color:var(--red)!important}
+</style>
 </head>
 <body><div id="app"></div><dialog aria-labelledby="sheet-title" id="sheet"><div id="sheet-body"></div></dialog><div hidden="" id="toast" role="status"></div><style id="refactoring-ui-design-system">
 /* Refactoring UI: coherent scales, useful hierarchy, restrained elevation.
@@ -3634,9 +3638,10 @@ function tableView(){
  if(g.winner)return finishedPanel(g);
  return `${['speeches','defense'].includes(r.stage)?speakerDeck(g):''}${r.stage==='night'?'':rosterPanel(g)}${phasePanel(g)}${r.stage==='night'?rosterPanel(g,{aliveOnly:true,below:true,nightMode:true}):''}${controls}`;
 }
+function openingClockUrgent(g,left){return left===0||(g.opening?.stage==='mafia'&&left<=10000);}
 function openingTimerPanel(g){
- const running=g.openingTimer?.deadline!=null;
- return `<section class="phase-stopwatch opening-stopwatch" aria-label="Таймер Ночи 0"><output class="clock${E.openingRemaining(g)===0?' urgent expired':''}" id="opening-clock">${clockMarkup(E.openingRemaining(g))}</output><div class="stopwatch-controls">${button(running?'Пауза':'Старт','opening-timer','primary','',running?'pause':'play')}${button('Сброс','opening-reset','','','reset')}</div></section>`;
+ const running=g.openingTimer?.deadline!=null,left=E.openingRemaining(g);
+ return `<section class="phase-stopwatch opening-stopwatch" aria-label="Таймер Ночи 0"><output class="clock${openingClockUrgent(g,left)?' urgent':''}${left===0?' expired':''}" id="opening-clock">${clockMarkup(left)}</output><div class="stopwatch-controls">${button(running?'Пауза':'Старт','opening-timer','primary','',running?'pause':'play')}${button('Сброс','opening-reset','','','reset')}</div></section>`;
 }
 
 function openingPanel(g){
@@ -4241,7 +4246,7 @@ function tick(){
  const g=game();if(!g||view!=='table'||storageConflict)return;
  if($('opening-clock')){
   if(!E.inOpening(g))return;
-  const left=E.openingRemaining(g);updateClock('opening-clock',left);$('opening-clock').classList.toggle('urgent',left===0);applyExpiredClock('opening-clock',left);
+  const left=E.openingRemaining(g);updateClock('opening-clock',left);$('opening-clock').classList.toggle('urgent',openingClockUrgent(g,left));applyExpiredClock('opening-clock',left);
   if(g.openingTimer?.deadline!=null&&left===0){E.pauseOpeningTimer(g);persist();beep();if(db.prefs.vibrate)navigator.vibrate?.([140,80,140]);render();return;}
  }
  if($('farewell-clock')){
@@ -4672,10 +4677,19 @@ async function musicImportFiles(files,auto,mood){
  const matches=[],unmatched=[];
  for(const file of expanded){const entry=musicMatch(file.name,await musicTags(file));if(entry)matches.push({entry,file});else unmatched.push(file.name);}
  if(!matches.length){toast(badZip?tr('Не удалось открыть ZIP. Выберите распакованные аудиофайлы','Could not open ZIP. Select extracted audio files.'):expanded.length?tr('Треки не распознаны: ','Tracks not recognized: ')+unmatched.slice(0,2).join(', '):tr('Аудиофайлы не найдены','No audio files found'));return;}
- const current=musicTrack()?.id;const items=matches.map(x=>musicAdd(x.entry,x.file));musicSave(items);
+ const current=musicTrack()?.id,items=[],duplicates=[];
+ // A catalogue ID identifies the song in the playlist, even if the imported file has a different name.
+ // Never replace an existing playlist entry or a currently playing AudioBuffer on duplicate import.
+ for(const {entry,file} of matches){
+  if(gattoTracks[entry.mood].some(t=>t.id===entry.id))duplicates.push(entry);
+  else items.push(musicAdd(entry,file));
+ }
+ if(items.length)musicSave(items);
  if(current&&music.mode){const idx=gattoTracks[music.mode].findIndex(t=>t.id===current);if(idx>=0)music.indices[music.mode]=idx;}
  musicRefresh();if(auto&&music.mode===mood&&!music.playing&&musicTrack())musicPlay();
- toast(tr('Музыка: ','Music: ')+gattoTracks.calm.length+' / '+gattoTracks.dynamic.length+(unmatched.length?tr(' · Не распознано: ',' · Unmatched: ')+unmatched.length:''));
+ if(!items.length&&duplicates.length===1)toast(tr('Трек уже есть в плейлисте: ','Track already exists in the playlist: ')+duplicates[0].title);
+ else if(!items.length&&duplicates.length>1)toast(tr('Эти треки уже есть в плейлисте: ','These tracks already exist in the playlist: ')+duplicates.length);
+ else toast(tr('Добавлено: ','Added: ')+items.length+(duplicates.length?tr(' · Уже есть в плейлисте: ',' · Already in the playlist: ')+duplicates.length:'')+(unmatched.length?tr(' · Не распознано: ',' · Unmatched: ')+unmatched.length:''));
 }
 function musicImport(auto=false){
  if(music.importing)return;const mood=music.mode||musicDesired();if(!mood)return;music.mode=mood;music.importing=true;
